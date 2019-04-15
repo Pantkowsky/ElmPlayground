@@ -21,7 +21,7 @@ update msg model =
         Increment -> { model | count = model.count + 1, text = String.fromInt model.count }
         Decrement -> { model | count = model.count - 1, text = String.fromInt model.count }
         Reset -> { model | count = 0, text = "0" }
-        Change value -> { model | text = value, count = asNumber model.text   }
+        Change value -> { model | count = asNumber value, text = value   }
 
 asNumber: String -> Int
 asNumber value =
@@ -31,16 +31,14 @@ view : Model -> Html Msg
 view model =
     div [ class "background" ] [
         div [ class "boxCounter" ] [ text <| "Current value is: " ++ String.fromInt model.count ],
-        div [ ] [
-            button [ onClick Increment ] [ text "Increment counter" ],
-            div [] [ text <| String.fromInt model.count ],
-            button [ onClick Decrement ] [ text "Decrement counter" ]
+        div [ class "inputField" ] [
+            button [ class "button", onClick Increment ] [ text "Increment" ],
+            button [ class "button", onClick Decrement ] [ text "Decrement" ],
+            button [ class "button", onClick Reset ] [ text "Reset" ]
         ],
-        div [ ] [
-            button [ onClick Reset ] [ text "Reset counter" ]
-        ],
-        div [ ] [
-            input [ placeholder "Input your own", onInput Change] [ ]
+        div [ class "inputField" ] [
+            div [ ] [ text "or" ],
+            input [ class "field", placeholder "Input your own", onInput Change] [ ]
         ]
     ]
 
