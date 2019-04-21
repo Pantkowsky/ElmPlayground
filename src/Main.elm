@@ -4,6 +4,7 @@ import Browser
 import Html exposing (Html, button, text, div, input)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput)
+import Helpers exposing (asNumber)
 
 type alias Model = { count : Int, text : String }
 
@@ -22,10 +23,6 @@ update msg model =
         Decrement -> { model | count = model.count - 1, text = String.fromInt model.count }
         Reset -> { model | count = 0, text = "0" }
         Change value -> { model | count = asNumber value, text = value   }
-
-asNumber: String -> Int
-asNumber value =
-    Maybe.withDefault 0 (String.toInt value)
 
 view : Model -> Html Msg
 view model =
