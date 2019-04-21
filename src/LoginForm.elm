@@ -1,12 +1,12 @@
 module LoginForm exposing (main)
 
 import Browser
+import Constants exposing (..)
 import Html exposing (..)
-import Helpers exposing (asNumber)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onInput, onClick)
 
-type alias Model = { name: String, age: Int, password: String, validatedPassword: String, loginResult: String }
+type alias Model = { name: String, age: Maybe Int, password: String, validatedPassword: String, loginResult: String }
 
 type Msg = Name String
     | Age String
@@ -18,13 +18,13 @@ main: Program() Model Msg
 main = Browser.sandbox { init = init, update = update, view = view }
 
 init: Model
-init = Model "" 0 "" "" "Sign-up form example"
+init = Model "" Maybe.Nothing "" "" "Sign-up form example"
 
 update: Msg -> Model -> Model
 update msg model =
     case msg of
         Name name -> { model | name = name }
-        Age age -> { model | age = asNumber age }
+        Age age -> { model | age = String.toInt age }
         Password pswd -> { model | password = pswd }
         ValidatedPassword validated -> { model | validatedPassword = validated }
         LoginResult result -> { model | loginResult = result }
@@ -40,7 +40,8 @@ view model =
             ],
             div [ class "loginField" ] [
                 div [ ] [ text "Age" ],
-                input [ placeholder "What is your age?", onInput Age ] [ ]
+                input [ placeholder "What is your age?", onInput Age ] [ ],
+                validateAge model.age
             ],
             div [ class "loginField" ] [
                 div [ ] [ text "Password" ],
@@ -56,6 +57,28 @@ view model =
         ]
     ]
 
+validateAge: Maybe Int -> Html Msg
+validateAge age =
+    case age of
+        Nothing -> div [  ] [ text "" ]
+        Just a ->
+            if a < 0 then
+                div [ style "color" "red" ] [ text "You can't have negative age" ]
+            else if a < 18 then
+                div [ style "color" "red" ] [ text "You need to be at least 18 to enter this page" ]
+            else
+                div [  ] [ text "" ]
+
+checkAge: Maybe Int -> Msg
+checkAge age =
+    case age of
+        Nothing -> message incorrectAgeMessage
+        Just a ->
+            if a < 18 then
+                message incorrectAgeMessage
+            else
+                message successMessage
+
 
 textInput: String -> String -> String -> (String -> msg) -> Html msg
 textInput text pswd validated msg =
@@ -65,15 +88,16 @@ validate: Model -> Msg
 validate model =
     if model.password == model.validatedPassword then
         if checkLength model.password then
-            if model.age < 18 then
-                LoginResult "You need to be 18 to sign-up"
-            else
-                LoginResult "Sign-up successful"
+            checkAge model.age
         else
-            LoginResult "Password is too short. Use more than 8 characters"
+            message shortPasswordMessage
     else
-        LoginResult "Incorrect password. Have you re-typed it correctly?"
+        message wrongPasswordMessage
 
 checkLength: String -> Bool
 checkLength password =
-    if String.length password > 8 then True else False
+    if String.length password > requiredLength then True else False
+
+message: String -> Msg
+message msg =
+    LoginResult msg
