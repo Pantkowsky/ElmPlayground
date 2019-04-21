@@ -1,6 +1,7 @@
 module LoginForm exposing (main)
 
 import Browser
+import Char exposing (isDigit, isLower, isUpper)
 import Constants exposing (..)
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -45,7 +46,8 @@ view model =
             ],
             div [ class "loginField" ] [
                 div [ ] [ text "Password" ],
-                textInput "password" "Password" model.password Password
+                textInput "password" "Password" model.password Password,
+                validatePasswordLength model.password
             ],
             div [ class "loginField" ] [
                 div [ ] [ text "Confirm your password"],
@@ -69,16 +71,14 @@ validateAge age =
             else
                 div [  ] [ text "" ]
 
-checkAge: Maybe Int -> Msg
-checkAge age =
-    case age of
-        Nothing -> message incorrectAgeMessage
-        Just a ->
-            if a < 18 then
-                message incorrectAgeMessage
-            else
-                message successMessage
-
+validatePasswordLength: String -> Html Msg
+validatePasswordLength password =
+    if not (checkLength password) then
+        div [ class "errorMessage" ] [ text shortPasswordMessage ]
+    else if not (checkPasswordStrength password) then
+        div [ class "passwordMedium" ] [ text "Medium strong password" ]
+    else
+        div [ class "passwordStrong" ] [ text "Strong password" ]
 
 textInput: String -> String -> String -> (String -> msg) -> Html msg
 textInput text pswd validated msg =
@@ -88,7 +88,7 @@ validate: Model -> Msg
 validate model =
     if model.password == model.validatedPassword then
         if checkLength model.password then
-            checkAge model.age
+            message successMessage
         else
             message shortPasswordMessage
     else
@@ -96,7 +96,38 @@ validate model =
 
 checkLength: String -> Bool
 checkLength password =
-    if String.length password > requiredLength then True else False
+    if String.length password > requiredLength then
+        True
+    else
+        False
+
+checkPasswordStrength: String -> Bool
+checkPasswordStrength password =
+    if (hasDigits password) && (hasLowercaseChar password) && (hasUppercaseChar password) then
+        True
+    else
+        False
+
+hasDigits: String -> Bool
+hasDigits pswd =
+    if String.any isDigit pswd then
+        True
+    else
+        False
+
+hasLowercaseChar: String -> Bool
+hasLowercaseChar pswd =
+    if String.any isLower pswd then
+        True
+    else
+        False
+
+hasUppercaseChar: String -> Bool
+hasUppercaseChar pswd =
+    if String.any isUpper pswd then
+        True
+    else
+        False
 
 message: String -> Msg
 message msg =
