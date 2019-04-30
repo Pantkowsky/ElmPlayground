@@ -4,19 +4,21 @@ import Browser
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Json.Decode exposing (Decoder, field, string)
+import Json.Decode exposing (Decoder, map2, field, string)
 import Http
 
 type alias Model = { name: String, response: Response }
 
+type alias Gif = { url: String, imageSrc: String }
+
 type Response = Initial
     | Failure
     | Loading
-    | Success String
+    | Success String String
 
 type Msg = SaveTag String
     | Next
-    | GotGif (Result Http.Error String)
+    | GotGif (Result Http.Error Gif)
 
 main = Browser.element
     { init = init
@@ -38,7 +40,7 @@ update msg model =
         Next -> ( { model| response = Loading }, getRandomGif model.name)
         GotGif result ->
             case result of
-                Ok url -> ({ model | response = Success url }, Cmd.none)
+                Ok res -> ({ model | response = Success res.url res.imageSrc }, Cmd.none)
                 Err _ -> ({ model | response = Failure }, Cmd.none)
 
 subscriptions: Model -> Sub Msg
@@ -49,7 +51,7 @@ view: Model -> Html Msg
 view model =
     div [ class "background" ] [
         div [ class "boxCounter" ] [
-            input [ placeholder "What are you looking for", onInput SaveTag ] [ ],
+            input [ placeholder "What the fuck", onInput SaveTag ] [ ],
             button [ onClick Next ] [ text "Search" ]
         ],
         gif model.response
@@ -71,9 +73,14 @@ gif model =
             div [  class "cmdMessage"  ] [
                 text "Loading the next gif"
             ]
-        Success url ->
+        Success url imgSrc ->
             div [  class "cmdMessage"  ] [
-                img [ src url ] [ ]
+                div [ ] [
+                    img [ src imgSrc ] [ ]
+                ],
+                div [ ] [
+                    h2 [ ] [ text url ]
+                ]
             ]
 
 getRandomGif: String -> Cmd Msg
@@ -85,5 +92,8 @@ getRandomGif tag =
 requestUrl: String -> String
 requestUrl tag = String.concat ["https://api.giphy.com/v1/gifs/random?api_key=Ei1N4q52AxxlRK6Lf11Ka6VzvX00yKCM&tag=", tag]
 
-decoder: Decoder String
-decoder = field "data" (field "image_url" string)
+decoder: Decoder Gif
+decoder =
+    map2 Gif
+        (field "data" (field "url" string))
+        (field "data" (field "image_url" string))
