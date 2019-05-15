@@ -14,7 +14,6 @@ main = Browser.sandbox { init = init, update = update, view = view }
 
 
 
-
 -- MODEL
 
 init: Model
@@ -41,7 +40,6 @@ view model =
             input [ class "field", placeholder "Convert to ASCII", onInput Convert ] [ ]
         ]
     ]
-
 
 
 
