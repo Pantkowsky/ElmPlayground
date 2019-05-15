@@ -12,13 +12,26 @@ type Msg = Convert String
 main: Program() Model Msg
 main = Browser.sandbox { init = init, update = update, view = view }
 
+
+
+
+-- MODEL
+
 init: Model
 init = { text = "" }
+
+
+
+-- UPDATE
 
 update: Msg -> Model -> Model
 update msg model =
     case msg of
         Convert string -> { model | text = convertAscii string }
+
+
+
+-- VIEW
 
 view: Model -> Html Msg
 view model =
@@ -28,6 +41,9 @@ view model =
             input [ class "field", placeholder "Convert to ASCII", onInput Convert ] [ ]
         ]
     ]
+
+
+
 
 -- Convert a string into it's ASCII equivalent
 convertAscii : String -> String
