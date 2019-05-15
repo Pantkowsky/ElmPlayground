@@ -45,7 +45,7 @@ asChars string =
 -- Assemble a list of characters into a string
 concatenate: List String -> String
 concatenate list =
-    String.concat list
+    String.join separator list
 
 -- Convert a list of integers into a list of strings
 toStringList: List Int -> List String
@@ -59,6 +59,7 @@ toAscii chars =
     chars
         |> List.map toCode
 
-
-
+-- String separator
+separator: String
+separator = " "
 
